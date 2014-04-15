@@ -1,0 +1,78 @@
+MONGODB
+
+Installation OS X:
+downloaded
+added path to .bashrc file NVM DO THIS:
+export PATH=$PATH:/Volumes/Macintosh\ HDD/HDD\ desktop/GT\ Spring\ \'14/4440/norton\ project/mongo/mongodb-osx-x86_64-2.6.0/bin 
+
+run:
+sudo mkdir -p /data/db
+sudo chmod 0755 /data/db
+sudo chown $USER /data/db
+
+Using:
+Start server with "mongod"
+
+run "mongo"
+
+> use newdb
+> db.set1.find() //returns first 20 entries
+
+TO IMPORT THE CSV WHOLESALE FILE:
+from bash
+$ mongoimport --db newdb --collection set1 --type csv --file /Volumes/Macintosh\ HDD/HDD\ desktop/GT\ Spring\ \'14/4440/norton\ project/mongo/Wholesale\ customers\ data.csv --headerline
+
+
+
+
+COUCHDB
+
+Intallation:
+download, unzip, move to applications
+web "ui": http://127.0.0.1:5984/_utils
+
+Using:
+Use TranslatorToJSON.java to transform csv to json file.
+Import with:
+curl -X POST http://127.0.0.1:5984/wholesale3/_bulk_docs -H "Content-type: application/json" -d @/Volumes/Macintosh\ HDD/HDD\ desktop/GT\ Spring\ \'14/4440/norton\ project/Wholesale-customers-data.json
+
+
+
+
+REDIS
+
+Installation:
+download
+run make
+make -C redis install redis-cli /usr/bin
+
+Using:
+start redis server: navigate to redis-2.8.8/src directory
+run "./redis-server"
+
+somewhere else run "./redis-cli"
+
+Use TranslatorForRedis.java to parse .csv to get Wholesale-customers-data.txt in form Redis wants.
+Then pipe it into the redis client.
+redis-cli < Wholesale-customers-data.txt
+
+
+
+
+MEMCACHED
+
+Installation:
+download
+
+Using:
+cd to folder
+run "memcached" - starts server
+in other tab connect through telnet "telnet localhost 112211"
+
+set thing 0 0 2
+12
+where thing=key and 12=value
+
+get spymemcached jar
+Use Memcached.java to translate .csv into commands that are immediately run in Memcached server with use of spymemcached jar.
+as of now, key="item0" value="long string of Thing Number Thing2 Number2"
