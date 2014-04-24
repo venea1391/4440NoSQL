@@ -18,9 +18,12 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 
@@ -28,6 +31,12 @@ public class Mongo {
 	public static MongoClient mongoClient;
 	static File file;
 	static BufferedWriter bw;
+	
+	public static Random randomGenerator;
+	public static ArrayList<String> randomKeys;
+	public static BasicDBObject defaultValue;
+	public static final double PERCENTAGE = .1;
+	
 	public static void main(String[] args) {
 		try {
 			file = new File("couch-results.txt");
@@ -42,6 +51,28 @@ public class Mongo {
 			mongoClient.dropDatabase("small");
 			mongoClient.dropDatabase("medium");
 			mongoClient.dropDatabase("large");
+			
+			randomGenerator = new Random();
+			randomKeys = new ArrayList<String>();
+			defaultValue = new BasicDBObject("age", "null")
+            .append("job", "null")
+            .append("marital", "null")
+            .append("education", "null")
+            .append("default", "null")
+            .append("balance", "null")
+            .append("housing", "null")
+            .append("loan", "null")
+            .append("contact", "null")
+            .append("day", "null")
+            .append("month", "null")
+            .append("duration", "null")
+            .append("campaign", "null")
+            .append("pdays", "null")
+            .append("previous", "null")
+            .append("poutcome", "null")
+            .append("y", "null");
+			
+			
 			runSmallDataset();
 			runMediumDataset();
 			runLargeDataset();
@@ -61,14 +92,26 @@ public class Mongo {
 		DBCollection coll = db.getCollection("small_coll");
 		try {
 			long pre_load = System.currentTimeMillis();
-			loadDB(db, coll, "bank-small.csv");
+			int n = loadDB(coll, "bank-small.csv");
 			long after_load = System.currentTimeMillis();
 			bw.write("time to load small: "+(after_load-pre_load)+" ms\n");
+			
+			//start workloads
+			//generate (PERCENTAGE*size) random numbers
+			
+		    for (int idx = 0; idx <= (n*PERCENTAGE) ; ++idx){
+		      int randomInt = randomGenerator.nextInt(n);
+		      randomKeys.add("item"+randomInt);
+		    }
+		    /*run100Read(coll);
+		    run100Write(coll);
+		    run5050(coll);
+		    run9010(coll);
+		    run1090(coll);*/
+		    
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}	
 			
@@ -80,7 +123,7 @@ public class Mongo {
 		DBCollection coll = db.getCollection("medium_coll");
 		try {
 			long pre_load = System.currentTimeMillis();
-			loadDB(db, coll, "bank-medium.csv");
+			loadDB(coll, "bank-medium.csv");
 			long after_load = System.currentTimeMillis();
 			bw.write("time to load medium: "+(after_load-pre_load)+" ms\n");
 		} catch (FileNotFoundException e) {
@@ -99,7 +142,7 @@ public class Mongo {
 		DBCollection coll = db.getCollection("large_coll");
 		try {
 			long pre_load = System.currentTimeMillis();
-			loadDB(db, coll, "bank-large.csv");
+			loadDB(coll, "bank-large.csv");
 			long after_load = System.currentTimeMillis();
 			bw.write("time to load large: "+(after_load-pre_load)+" ms\n");
 		} catch (FileNotFoundException e) {
@@ -113,7 +156,7 @@ public class Mongo {
 	}
 	
 	
-	public static void loadDB(DB db, DBCollection coll, String file) 
+	public static int loadDB(DBCollection coll, String file) 
 			throws IOException, FileNotFoundException {
 		CSVReader reader = new CSVReader(new FileReader(file), ';');
 		String [] nextLine;
@@ -159,6 +202,7 @@ public class Mongo {
 		//DBObject myDoc = coll.findOne();
 		//System.out.println(myDoc);
 		reader.close();
+		return n;
 	}
 	
 	/**

@@ -50,7 +50,7 @@ public class Couch {
 
 			runSmallDataset();
 			runMediumDataset();
-			runLargeDataset();
+			//runLargeDataset();
 		
 			bw.close();
 		} catch (IOException e){
