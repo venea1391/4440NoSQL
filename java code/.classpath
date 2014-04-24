@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/Volumes/Macintosh HDD/HDD desktop/GT Spring &apos;14/4440/norton project/java code/opencsv-2.3/deploy/opencsv-2.3.jar"/>
+	<classpathentry kind="lib" path="/Volumes/Macintosh HDD/HDD desktop/GT Spring &apos;14/4440/norton project/spymemcached-2.8.4.jar"/>
+	<classpathentry kind="lib" path="/Volumes/Macintosh HDD/HDD desktop/GT Spring &apos;14/4440/norton project/java code/mongo-2.10.1.jar"/>
+	<classpathentry kind="lib" path="/Volumes/Macintosh HDD/HDD desktop/GT Spring &apos;14/4440/norton project/java code/lightcouch-0.0.6.jar"/>
+	<classpathentry kind="lib" path="/Volumes/Macintosh HDD/HDD desktop/GT Spring &apos;14/4440/norton project/java code/httpclient-4.3.3.jar"/>
+	<classpathentry kind="lib" path="/Volumes/Macintosh HDD/HDD desktop/GT Spring &apos;14/4440/norton project/java code/httpcore-4.3.2.jar"/>
+	<classpathentry kind="lib" path="/Volumes/Macintosh HDD/HDD desktop/GT Spring &apos;14/4440/norton project/java code/commons-codec-1.9.jar"/>
+	<classpathentry kind="lib" path="/Volumes/Macintosh HDD/HDD desktop/GT Spring &apos;14/4440/norton project/java code/commons-logging-1.1.3.jar"/>
+	<classpathentry kind="lib" path="/Volumes/Macintosh HDD/HDD desktop/GT Spring &apos;14/4440/norton project/java code/gson-2.2.4.jar"/>
+	<classpathentry kind="lib" path="/Volumes/Macintosh HDD/HDD desktop/GT Spring &apos;14/4440/norton project/java code/commons-lang-2.6.jar"/>
+	<classpathentry kind="lib" path="/Volumes/Macintosh HDD/HDD desktop/GT Spring &apos;14/4440/norton project/java code/org.json-20120521.jar"/>
+	<classpathentry kind="lib" path="/Users/Venea/Downloads/jedis-2.1.0.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

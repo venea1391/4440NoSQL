@@ -1,0 +1,18 @@
+time to load small: 700 ms
+time to run 100% read workload: 113 ms
+time to run 100% write workload: 20 ms
+time to run 50% read, 50% write workload: 92 ms
+time to run 90% read, 10% write workload: 122 ms
+time to run 10% read, 90% write workload: 24 ms
+time to load medium: 1789 ms
+time to run 100% read workload: 842 ms
+time to run 100% write workload: 65 ms
+time to run 50% read, 50% write workload: 768 ms
+time to run 90% read, 10% write workload: 295 ms
+time to run 10% read, 90% write workload: 118 ms
+time to load large: 4140 ms
+time to run 100% read workload: 2856 ms
+time to run 100% write workload: 218 ms
+time to run 50% read, 50% write workload: 2491 ms
+time to run 90% read, 10% write workload: 1228 ms
+time to run 10% read, 90% write workload: 341 ms
