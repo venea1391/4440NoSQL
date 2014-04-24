@@ -49,7 +49,7 @@ public class Couch {
 				      "\"poutcome\": \"null\", \"y\": \"null\" }");
 
 			runSmallDataset();
-			runMediumDataset();
+			//runMediumDataset();
 			//runLargeDataset();
 		
 			bw.close();

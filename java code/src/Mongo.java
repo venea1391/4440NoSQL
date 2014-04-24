@@ -1,16 +1,9 @@
 import au.com.bytecode.opencsv.CSVReader;
 
 import com.mongodb.MongoClient;
-import com.mongodb.MongoException;
-import com.mongodb.WriteConcern;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
-import com.mongodb.DBCursor;
-import com.mongodb.ServerAddress;
-import com.mongodb.WriteResult;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -19,12 +12,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 
 
 public class Mongo {
@@ -34,12 +24,12 @@ public class Mongo {
 	
 	public static Random randomGenerator;
 	public static ArrayList<String> randomKeys;
-	public static BasicDBObject defaultValue;
+	public static Map<String, String> defaultValue;
 	public static final double PERCENTAGE = .1;
 	
 	public static void main(String[] args) {
 		try {
-			file = new File("couch-results.txt");
+			file = new File("mongo-results.txt");
 			if (!file.exists()) {
 				file.createNewFile();
 			}
@@ -54,23 +44,24 @@ public class Mongo {
 			
 			randomGenerator = new Random();
 			randomKeys = new ArrayList<String>();
-			defaultValue = new BasicDBObject("age", "null")
-            .append("job", "null")
-            .append("marital", "null")
-            .append("education", "null")
-            .append("default", "null")
-            .append("balance", "null")
-            .append("housing", "null")
-            .append("loan", "null")
-            .append("contact", "null")
-            .append("day", "null")
-            .append("month", "null")
-            .append("duration", "null")
-            .append("campaign", "null")
-            .append("pdays", "null")
-            .append("previous", "null")
-            .append("poutcome", "null")
-            .append("y", "null");
+			defaultValue = new HashMap<String, String>();
+			defaultValue.put("age", "null");
+			defaultValue.put("job", "null");
+			defaultValue.put("marital", "null");
+			defaultValue.put("education", "null");
+			defaultValue.put("default", "null");
+			defaultValue.put("balance", "null");
+			defaultValue.put("housing", "null");
+			defaultValue.put("loan", "null");
+			defaultValue.put("contact", "null");
+			defaultValue.put("day", "null");
+			defaultValue.put("month", "null");
+			defaultValue.put("duration", "null");
+			defaultValue.put("campaign", "null");
+			defaultValue.put("pdays", "null");
+			defaultValue.put("previous", "null");
+			defaultValue.put("poutcome", "null");
+			defaultValue.put("y", "null");
 			
 			
 			runSmallDataset();
@@ -103,11 +94,11 @@ public class Mongo {
 		      int randomInt = randomGenerator.nextInt(n);
 		      randomKeys.add("item"+randomInt);
 		    }
-		    /*run100Read(coll);
+		    run100Read(coll);
 		    run100Write(coll);
 		    run5050(coll);
 		    run9010(coll);
-		    run1090(coll);*/
+		    run1090(coll);
 		    
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -123,14 +114,26 @@ public class Mongo {
 		DBCollection coll = db.getCollection("medium_coll");
 		try {
 			long pre_load = System.currentTimeMillis();
-			loadDB(coll, "bank-medium.csv");
+			int n = loadDB(coll, "bank-medium.csv");
 			long after_load = System.currentTimeMillis();
 			bw.write("time to load medium: "+(after_load-pre_load)+" ms\n");
+			
+			//start workloads
+			//generate (PERCENTAGE*size) random numbers
+			
+		    for (int idx = 0; idx <= (n*PERCENTAGE) ; ++idx){
+		      int randomInt = randomGenerator.nextInt(n);
+		      randomKeys.add("item"+randomInt);
+		    }
+		    run100Read(coll);
+		    run100Write(coll);
+		    run5050(coll);
+		    run9010(coll);
+		    run1090(coll);
+		    
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}	
 			
@@ -142,14 +145,26 @@ public class Mongo {
 		DBCollection coll = db.getCollection("large_coll");
 		try {
 			long pre_load = System.currentTimeMillis();
-			loadDB(coll, "bank-large.csv");
+			int n = loadDB(coll, "bank-large.csv");
 			long after_load = System.currentTimeMillis();
 			bw.write("time to load large: "+(after_load-pre_load)+" ms\n");
+			
+			//start workloads
+			//generate (PERCENTAGE*size) random numbers
+			
+		    for (int idx = 0; idx <= (n*PERCENTAGE) ; ++idx){
+		      int randomInt = randomGenerator.nextInt(n);
+		      randomKeys.add("item"+randomInt);
+		    }
+		    run100Read(coll);
+		    run100Write(coll);
+		    run5050(coll);
+		    run9010(coll);
+		    run1090(coll);
+		    
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}	
 			
@@ -161,38 +176,31 @@ public class Mongo {
 		CSVReader reader = new CSVReader(new FileReader(file), ';');
 		String [] nextLine;
 		String[] items;
+		HashMap<String, String> properties;
 		int n = 0;
-		//age;"job";"marital";"education";"default";"balance";"housing";
-		//"loan";"contact";"day";"month";"duration";"campaign";"pdays";
-		//"previous";"poutcome";"y"
 	    nextLine = reader.readNext(); //skip header
 		while ((nextLine = reader.readNext()) != null) {
 			items = nextLine[0].split(";");
-			    /*s += "{ \"age\": " + items[0] + ", \"job\": " + items[1] + ", \"marital\": " + items[2] + 
-			    ", \"education\": " + items[3] + ", \"default\": " + items[4] + ", \"balance\": " + items[5] + 
-			    ", \"housing\": " + items[6] + ", \"loan\": " + items[7] + ", \"contact\": " + items[8] +
-			     ", \"day\": " + items[9] + ", \"month\": " + items[10] + ", \"duration\": " + items[11] +
-			     ", \"campaign\": " + items[12] + ", \"pdays\": " + items[13] + ", \"previous\": " + items[14] +
-			      ", \"poutcome\": " + items[15] + ", \"y\": " + items[16] + " }"; */
-			    //System.out.println(s);
-			BasicDBObject doc = new BasicDBObject("age", items[0])
-                        .append("job", items[1])
-                        .append("marital", items[2])
-                        .append("education", items[3])
-                        .append("default", items[4])
-                        .append("balance", items[5])
-                        .append("housing", items[6])
-                        .append("loan", items[7])
-                        .append("contact", items[8])
-                        .append("day", items[9])
-                        .append("month", items[10])
-                        .append("duration", items[11])
-                        .append("campaign", items[12])
-                        .append("pdays", items[13])
-                        .append("previous", items[14])
-                        .append("poutcome", items[15])
-                        .append("y", items[16]);
+			properties = new HashMap<String, String>();
+			properties.put("age", items[0]);
+			properties.put("job", items[1]);
+			properties.put("marital", items[2]);
+			properties.put("education", items[3]);
+			properties.put("default", items[4]);
+			properties.put("balance", items[5]);
+			properties.put("housing", items[6]);
+			properties.put("loan", items[7]);
+			properties.put("contact", items[8]);
+			properties.put("day", items[9]);
+			properties.put("month", items[10]);
+			properties.put("duration", items[11]);
+			properties.put("campaign", items[12]);
+			properties.put("pdays", items[13]);
+			properties.put("previous", items[14]);
+			properties.put("poutcome", items[15]);
+			properties.put("y", items[16]);
 
+			BasicDBObject doc = new BasicDBObject("item"+n, properties);
 			coll.insert(doc);
 
 			n++;
@@ -205,158 +213,176 @@ public class Mongo {
 		return n;
 	}
 	
-	/**
-     * Delete a record from the database.
-     *
-     * @param table The name of the table
-     * @param key The record key of the record to delete.
-     * @return Zero on success, a non-zero error code on error. See this class's description for a discussion of error codes.
-     */
-    /*public int delete(String database, String table, String key) {
-        com.mongodb.DB db = null;
-        try {
-            db = mongoClient.getDB(database);
-            db.requestStart();
-            DBCollection collection = db.getCollection(table);
-            DBObject q = new BasicDBObject().append("_id", key);
-            WriteResult res = collection.remove(q);
-            return res.getN() == 1 ? 0 : 1;
-        }
-        catch (Exception e) {
-            System.err.println(e.toString());
-            return 1;
-        }
-        finally {
-            if (db != null) {
-                db.requestDone();
-            }
-        }
-    }*/
+public static void run100Read(DBCollection coll){
+		
+		int size = randomKeys.size();
+		long pre_100read = System.currentTimeMillis();
+		for (int i=0; i<size; i++){
+			coll.distinct((String) randomKeys.get(i));
+		}
+		long after_100read = System.currentTimeMillis();
+		try {
+			bw.write("time to run 100% read workload: "+(after_100read-pre_100read)+" ms\n");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static void run100Write(DBCollection coll){
+		
+		int size = randomKeys.size();
 
-    /**
-     * Insert a record in the database. Any field/value pairs in the specified values HashMap will be written into the record with the specified
-     * record key.
-     *
-     * @param table The name of the table
-     * @param key The record key of the record to insert.
-     * @param values A HashMap of field/value pairs to insert in the record
-     * @return Zero on success, a non-zero error code on error. See this class's description for a discussion of error codes.
-     */
-    /*public int insert(String database, String table, String key,
-            HashMap<String, ByteIterator> values) {
-        com.mongodb.DB db = null;
-        try {
-            db = mongoClient.getDB(database);
+		BasicDBObject doc;
+		ArrayList<BasicDBObject> objectList = new ArrayList<BasicDBObject>();
+		for (int i=0; i<size; i++){
+			objectList.add((BasicDBObject) (coll.distinct((String) randomKeys.get(i)).get(0)));
+		}
+		
+		long oldTime = System.currentTimeMillis();
+		long running_time = 0;
+		
+		for (int i=0; i<size; i++){
+			coll.remove(objectList.get(i));
+			doc = new BasicDBObject("item"+randomKeys.get(i), defaultValue);
+			coll.insert(doc);
+			
+			running_time += (System.currentTimeMillis() - oldTime);
+			objectList.clear();
+			for (int k=0; k<size; k++){
+				objectList.add((BasicDBObject) (coll.distinct((String) randomKeys.get(i)).get(0)));
+			}
+			//don't count the above loop in the running time
+			oldTime = System.currentTimeMillis();
+		}
+		
+		try {
+			bw.write("time to run 100% write workload: "+running_time+" ms\n");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static void run5050(DBCollection coll){
+		int size = randomKeys.size();
+		int firstHalf = size/2;
+		//int secondHalf = size-firstHalf;
+		
+		BasicDBObject doc;
+		ArrayList<BasicDBObject> objectList = new ArrayList<BasicDBObject>();
+		for (int i=0; i<size; i++){
+			objectList.add((BasicDBObject) (coll.distinct((String) randomKeys.get(i)).get(0)));
+		}
+		
+		long oldTime = System.currentTimeMillis();
+		long running_time = 0;
+		
+		for (int i=0; i<size; i++){
+			coll.distinct((String) randomKeys.get(i));
+		}
+		for (int i=0; i<firstHalf; i++){
+			coll.remove(objectList.get(i));
+			doc = new BasicDBObject("item"+randomKeys.get(i), defaultValue);
+			coll.insert(doc);
+			
+			running_time += (System.currentTimeMillis() - oldTime);
+			objectList.clear();
+			for (int k=0; k<size; k++){
+				objectList.add((BasicDBObject) (coll.distinct((String) randomKeys.get(i)).get(0)));
+			}
+			//don't count the above loop in the running time
+			oldTime = System.currentTimeMillis();
+		}
 
-            db.requestStart();
+		try {
+			bw.write("time to run 50% read, 50% write workload: "+running_time+" ms\n");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	public static void run9010(DBCollection coll){
+		int size = randomKeys.size();
+		int tenPercent = (int) (size*.1); //write
+		int ninetyPercent = (int) (size*.9); //read
+		int halfOfTen = tenPercent/2;
+		
+		
+		BasicDBObject doc;
+		ArrayList<BasicDBObject> objectList = new ArrayList<BasicDBObject>();
+		for (int i=0; i<size; i++){
+			objectList.add((BasicDBObject) (coll.distinct((String) randomKeys.get(i)).get(0)));
+		}
+		
+		long oldTime = System.currentTimeMillis();
+		long running_time = 0;
+		
+		//90% read
+		for (int i=0; i<ninetyPercent; i++){
+			coll.distinct((String) randomKeys.get(i));
+		}
+		
+		//10% write
+		for (int i=0; i<halfOfTen; i++){
+			coll.remove(objectList.get(i));
+			doc = new BasicDBObject("item"+randomKeys.get(i), defaultValue);
+			coll.insert(doc);
+			
+			running_time += (System.currentTimeMillis() - oldTime);
+			objectList.clear();
+			for (int k=0; k<size; k++){
+				objectList.add((BasicDBObject) (coll.distinct((String) randomKeys.get(i)).get(0)));
+			}
+			//don't count the above loop in the running time
+			oldTime = System.currentTimeMillis();
+		}
 
-            DBCollection collection = db.getCollection(table);
-            DBObject r = new BasicDBObject().append("_id", key);
-            for (String k : values.keySet()) {
-                r.put(k, values.get(k).toArray());
-            }
-            WriteResult res = collection.insert(r);
-            return res.getError() == null ? 0 : 1;
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-            return 1;
-        }
-        finally {
-            if (db != null) {
-                db.requestDone();
-            }
-        }
-    }*/
-
-    /**
-     * Read a record from the database. Each field/value pair from the result will be stored in a HashMap.
-     *
-     * @param table The name of the table
-     * @param key The record key of the record to read.
-     * @param fields The list of fields to read, or null for all of them
-     * @param result A HashMap of field/value pairs for the result
-     * @return Zero on success, a non-zero error code on error or "not found".
-     */
-    /*public int read(String database, String table, String key, Set<String> fields,
-            HashMap<String, ByteIterator> result) {
-        com.mongodb.DB db = null;
-        try {
-            db = mongoClient.getDB(database);
-
-            db.requestStart();
-
-            DBCollection collection = db.getCollection(table);
-            DBObject q = new BasicDBObject().append("_id", key);
-            DBObject fieldsToReturn = new BasicDBObject();
-
-            DBObject queryResult = null;
-            if (fields != null) {
-                Iterator<String> iter = fields.iterator();
-                while (iter.hasNext()) {
-                    fieldsToReturn.put(iter.next(), INCLUDE);
-                }
-                queryResult = collection.findOne(q, fieldsToReturn);
-            }
-            else {
-                queryResult = collection.findOne(q);
-            }
-
-            if (queryResult != null) {
-                result.putAll(queryResult.toMap());
-            }
-            return queryResult != null ? 0 : 1;
-        }
-        catch (Exception e) {
-            System.err.println(e.toString());
-            return 1;
-        }
-        finally {
-            if (db != null) {
-                db.requestDone();
-            }
-        }
-    }*/
-
-    /**
-     * Update a record in the database. Any field/value pairs in the specified values HashMap will be written into the record with the specified
-     * record key, overwriting any existing values with the same field name.
-     *
-     * @param table The name of the table
-     * @param key The record key of the record to write.
-     * @param values A HashMap of field/value pairs to update in the record
-     * @return Zero on success, a non-zero error code on error. See this class's description for a discussion of error codes.
-     */
-    /*public int update(String database, String table, String key,
-            HashMap<String, ByteIterator> values) {
-        com.mongodb.DB db = null;
-        try {
-            db = mongoClient.getDB(database);
-
-            db.requestStart();
-
-            DBCollection collection = db.getCollection(table);
-            DBObject q = new BasicDBObject().append("_id", key);
-            DBObject u = new BasicDBObject();
-            DBObject fieldsToSet = new BasicDBObject();
-            Iterator<String> keys = values.keySet().iterator();
-            while (keys.hasNext()) {
-                String tmpKey = keys.next();
-                fieldsToSet.put(tmpKey, values.get(tmpKey).toArray());
-
-            }
-            u.put("$set", fieldsToSet);
-            WriteResult res = collection.update(q, u, false, false);
-            return res.getN() == 1 ? 0 : 1;
-        }
-        catch (Exception e) {
-            System.err.println(e.toString());
-            return 1;
-        }
-        finally {
-            if (db != null) {
-                db.requestDone();
-            }
-        }
-    }*/
+		try {
+			bw.write("time to run 90% read, 10% write workload: "+running_time+" ms\n");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static void run1090(DBCollection coll){
+		int size = randomKeys.size();
+		int tenPercent = (int) (size*.1); //read
+		int ninetyPercent = (int) (size*.9); //write
+		int halfOfNinety = ninetyPercent/2;
+		
+		BasicDBObject doc;
+		ArrayList<BasicDBObject> objectList = new ArrayList<BasicDBObject>();
+		for (int i=0; i<size; i++){
+			objectList.add((BasicDBObject) (coll.distinct((String) randomKeys.get(i)).get(0)));
+		}
+		
+		long oldTime = System.currentTimeMillis();
+		long running_time = 0;
+		
+		//10% read
+		for (int i=0; i<tenPercent; i++){
+			coll.distinct((String) randomKeys.get(i));
+		}
+		
+		//90% write
+		for (int i=0; i<halfOfNinety; i++){
+			coll.remove(objectList.get(i));
+			doc = new BasicDBObject("item"+randomKeys.get(i), defaultValue);
+			coll.insert(doc);
+			
+			running_time += (System.currentTimeMillis() - oldTime);
+			objectList.clear();
+			for (int k=0; k<size; k++){
+				objectList.add((BasicDBObject) (coll.distinct((String) randomKeys.get(i)).get(0)));
+			}
+			//don't count the above loop in the running time
+			oldTime = System.currentTimeMillis();
+		}
+		
+		try {
+			bw.write("time to run 10% read, 90% write workload: "+running_time+" ms\n");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 }
